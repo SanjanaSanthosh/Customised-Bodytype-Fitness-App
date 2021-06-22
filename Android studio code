@@ -1,0 +1,304 @@
+**Mainactivity.java**
+package com.diet.dietapp;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+public class MainActivity extends AppCompatActivity {
+   Button b1,b2,b3;
+   @Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+       setContentView(R.layout.activity_main);
+       b1=(Button)findViewById(R.id.b1);
+       b2=(Button)findViewById(R.id.b3);
+       b1.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+              //user
+               Intent i=new Intent(MainActivity.this,Setuserdetails.class);
+               startActivity(i);
+           }
+       });   
+       b2.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) { Intent i=new Intent(MainActivity.this,Userlogin.class);
+               startActivity(i); }
+       }); }
+}
+**Userlogin.java**
+package com.diet.dietapp;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+public class Userlogin extends AppCompatActivity {
+   EditText e1,e2;
+   Button b1;
+  int fg=0,fg1=0;
+   Cursor c;
+   String user,pass;
+   String  user_info,password;
+   @Override
+   protected void onCreate(final Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+       setContentView(R.layout.activity_login);
+       e1=(EditText)findViewById(R.id.e1);
+       e2=(EditText)findViewById(R.id.e2);
+       b1=(Button)findViewById(R.id.b1);
+       b1.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               int status=0;
+               if(e1.length()==0) {
+                   fg = 1;
+                   e1.setHint("Username");
+                   e1.setHintTextColor(Color.RED);
+               }
+               fg1=0;
+               if(e2.length()==0) {
+                   fg1 = 1;
+                   e2.setHint("Password");
+                   e2.setHintTextColor(Color.RED);
+               }
+               if(fg==0 && fg1==0) {
+                   user = e1.getText().toString();
+                   pass = e2.getText().toString();
+                   SQLiteDatabase db=openOrCreateDatabase("diet", Context.MODE_PRIVATE,null);
+                   try{
+                       c=db.rawQuery("SELECT * from userdetails",null);
+                       if(c.moveToFirst())
+                       {
+                           do{
+                               user_info=c.getString(c.getColumnIndexOrThrow("user"));
+                               password=c.getString(c.getColumnIndexOrThrow("password"));
+                               if(user_info.equals(user) && password.equalsIgnoreCase(pass))
+                               {
+
+    Toast.makeText(getApplicationContext(),"Login Success",Toast.LENGTH_LONG).show();
+    Intent i=new Intent(Userlogin.this,bmicalculation.class);
+    startActivity(i);   }
+else
+{		       //  status=0;
+                                   //e1.setHint("Username ");
+                                   //e2.setHint("Password");
+                                   //=1;
+Toast.makeText(getApplicationContext(),"Invalid username/password.",Toast.LENGTH_LONG).show();
+                               }
+                           }while(c.moveToNext());
+                       }
+                   }
+                   catch (Exception e)
+                   {
+   Toast.makeText(getApplicationContext()," Exception in extracting "+e,Toast.LENGTH_LONG).show();
+                   }
+               }
+               else
+               {
+    Toast.makeText(getApplicationContext(),"Please enter the user name and password",Toast.LENGTH_LONG).show();
+               }
+           }
+       });
+   }
+}
+
+**Bmiclaculation.java**
+
+package com.diet.dietapp;
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class bmicalculation extends AppCompatActivity {
+    Button b1,b2,b3;
+    EditText e1,e2,e3,e4;
+    TextView t1;
+    String user,pass,dbpass,dbuser;
+    int fg=0;
+    int flg=0;
+    String empty="";
+    Cursor c;
+    float bmiValue;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_bmipage);
+        e1 = (EditText) findViewById(R.id.editText2);
+        e2 = (EditText) findViewById(R.id.e2);
+        e3 = (EditText) findViewById(R.id.editText);
+        e4 = (EditText) findViewById(R.id.e1);
+        b1 = (Button) findViewById(R.id.b1);
+        b2 = (Button) findViewById(R.id.button5);
+        b3 = (Button) findViewById(R.id.button6);
+        t1= ( TextView) findViewById(R.id.textView5);
+
+
+        b2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //health
+                //String bmi=String.valueOf(bmiValue);
+                Intent i=new Intent(bmicalculation.this,bodytype.class);
+                i.putExtra("age", e3.getText().toString());
+                i.putExtra("gender", e4.getText().toString());
+                startActivity(i);
+            }
+        });
+        
+        b1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String str1 = e1.getText().toString();
+                String str2 = e2.getText().toString();
+            //Get the user values from the widget reference
+                float weight = Float.parseFloat(str1);
+                float height = Float.parseFloat(str2)/100;
+                //Calculate BMI value
+                bmiValue = calculateBMI(weight, height);
+                //CHECK THE BMI LEVEL
+                if(bmiValue>18.5 && bmiValue<24.9)
+                {
+                    t1.setText("Your BMI result is:NORMAL WEIGHT.The healthy range of BMI is between 18.5-24.9");  }
+                else if(bmiValue<18.5) {  t1.setText("Your BMI result is:UNDER WEIGHT.The healthy range of BMI is between 18.5-24.9");
+               }
+                else
+                {
+ t1.setText("Your BMI result is:OVER WEIGHT.The healthy range of BMI is between 18.5-24.9");
+                }
+ String bmi=String.valueOf(bmiValue);
+ b1.setText(bmi);
+// Toast.makeText(getApplicationContext(),"Bmi calculate Succesful",Toast.LENGTH_SHORT).show();
+ }
+}); } //Calculate BMI
+    private float calculateBMI (float weight, float height) {
+        return (float) (weight / (height * height));
+    }
+}
+**Bodycategory.java**
+package com.diet.dietapp;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+public class bodyexecategory extends AppCompatActivity {
+   Button b1,b2,b3;
+   ImageView i1,i2,i3;
+    String age,gender;
+   @Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+       setContentView(R.layout.activity_exetype);
+       age=getIntent().getExtras().getString("age");
+       gender=getIntent().getExtras().getString("gender");
+       i1=(ImageView)findViewById(R.id.imageView14);
+       i2=(ImageView)findViewById(R.id.imageView16);
+       i1.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) { Intent i=new Intent(bodyexecategory.this,Dayselection.class);
+               i.putExtra("age", age);
+               i.putExtra("gender", gender);
+               i.putExtra("ex_type", "cardio");
+               startActivity(i);
+           }
+       });
+       i2.setOnClickListener(new View.OnClickListener() {
+           @Override
+               Intent i=new Intent(bodyexecategory.this,Dayselection.class);
+
+               i.putExtra("age", age);
+
+               i.putExtra("gender", gender);
+                 }
+}
+
+**Diet.java**
+package com.diet.dietapp;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+public class diet1 extends AppCompatActivity {
+   Button b1,b2,b3;
+   String age,gender,ex_type;
+   @Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+       setContentView(R.layout.activity_diet1);
+       age=getIntent().getExtras().getString("age");
+       gender=getIntent().getExtras().getString("gender");
+b1 = (Button) findViewById(R.id.button3);
+       b1.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               Intent i=new Intent(diet1.this,Dayselection11.class);
+               i.putExtra("age", age);
+ i.putExtra("ex_type", ex_type);
+ startActivity(i);
+  }
+       });
+  }
+}
+
+**Activitymain.xml**
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+   xmlns:tools="http://schemas.android.com/tools"
+   android:layout_width="match_parent"
+   android:layout_height="match_parent"
+   android:background="#FF91AF"
+   tools:context="com.diet.dietapp.MainActivity"
+   >
+
+
+   <Button
+       android:id="@+id/b3"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:background="@color/colorPrimary"
+       android:fontFamily="monospace"
+       android:text="Existing User Login"
+       android:textColor="#d2f"
+       tools:ignore="HardcodedText,UnusedAttribute" />
+
+   <ImageView
+       android:id="@+id/i3"
+       android:layout_width="800sp"
+       android:layout_height="100sp"
+       android:src="@drawable/plan"
+
+       tools:ignore="ContentDescription"
+       android:layout_alignParentTop="true"
+       android:layout_alignParentLeft="true"
+       android:layout_alignParentStart="true"
+       android:layout_alignParentRight="true"
+       android:layout_alignParentEnd="true" />
+
+   <Button
+       android:id="@+id/b1"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_marginTop="66dp"
+       android:background="@color/colorPrimary"
+       android:textColor="#d2f"
+       android:fontFamily="monospace"
+       android:text="New User Register "
+
+       tools:ignore="HardcodedText,UnusedAttribute"
+       android:layout_below="@+id/i3"
+       android:layout_centerHorizontal="true" />
+
+
+</RelativeLayout> 
+
+
